@@ -6,8 +6,8 @@ from ..screenplay import ElementType
 
 
 class Writer:
-    def __init__(self):
-        self.pretty_print = True
+    def __init__(self, prettyPrint=True):
+        self.pretty_print = prettyPrint
         self._last_char = None
 
     # Expects a FountainScript-like object
@@ -56,8 +56,9 @@ class Writer:
             lambda match: f"/*{script.boneyards[int(match.group(1))].text}*/",
             text,
         )
+        return text
 
-        return text.strip("\n")
+        # return text.strip("\n")
 
     def _write_elem(self, elem):
         elem_type = elem.type
@@ -113,15 +114,11 @@ class Writer:
 
         if elem_type == ElementType.HEADING:
             scene_number = f" #{elem.scene_number}#" if elem.scene_number else ""
-            if elem.forced:
-                return f"\n.{elem._text}{scene_number}"
-            return f"\n{elem._text}{scene_number}"
+            return "." * elem.forced + f"{elem._text}{scene_number}"
 
         if elem_type == ElementType.TRANSITION:
             pad = "\t" * 4 if self.pretty_print else ""
-            if elem.forced:
-                return f">{elem._text}"
-            return f"{pad}{elem._text}"
+            return ">" * elem.forced + f"{pad}{elem._text}"
 
         if elem_type == ElementType.PAGEBREAK:
             return "==="

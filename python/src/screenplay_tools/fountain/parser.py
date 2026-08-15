@@ -27,11 +27,11 @@ def is_whitespace_or_empty(line):
 
 
 class Parser:
-    def __init__(self):
+    def __init__(self, mergeActions=True, mergeDialogue=True):
         self.script = Script()
 
-        self.mergeActions = True
-        self.mergeDialogue = True
+        self.mergeActions = mergeActions
+        self.mergeDialogue = mergeDialogue
         self.useTags = False
 
         self._inTitlePage = True
@@ -268,7 +268,7 @@ class Parser:
         Decodes a scene heading into text and scene number.
         Scene numbers are enclosed in `#` at the end of the heading.
         """
-        regex = re.compile(r"^(.*?)(?:\s*#([a-zA-Z0-9\-.]+)#)?$")
+        regex = re.compile(r"^(?:\d+)?(.*?)(?:\d+)?(?:\s*#([a-zA-Z0-9\-.]+)#)?$")
         match = regex.match(line)
         if match:
             return {
@@ -299,7 +299,7 @@ class Parser:
         Parses a scene heading.
         A scene heading starts with keywords like INT, EXT, EST, INT./EXT, etc.
         """
-        regex_heading = re.compile(r"^\s*((INT|EXT|EST|INT\.\/EXT|INT\/EXT|I\/E)(\.|\s))|(FADE IN:\s*)", re.IGNORECASE)
+        regex_heading = re.compile(r"^(\d+)?\s*((INT|EXT|EST|INT\.?\/EXT|EXT\.?/INT|I\/E)(\.|\s))", re.IGNORECASE)
         if regex_heading.match(self._lineTrim):
             heading_data = self._decode_heading(self._lineTrim)
             if heading_data:
@@ -326,7 +326,7 @@ class Parser:
         Parses a transition. 
         Transitions usually end with 'TO:' and are surrounded by empty lines.
         """
-        regex_transition = re.compile(r"^\s*(?:[A-Z\s]+TO:)\s*$")
+        regex_transition = re.compile(r"^\s*((?:[A-Z\s]+(TO)?:)|(FADE IN:))\s*$")
         if regex_transition.match(self._line) and is_whitespace_or_empty(self._lastLine):
             # Add as pending to determine if it's a transition or action based on the next line
             self._pending.append({
